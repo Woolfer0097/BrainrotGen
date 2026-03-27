@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from app.api.v1.router import router as api_v1_router
-from app.config import settings
+from backend.api.v1.router import router as api_v1_router
+from backend.config import settings
 from db.connector import Base, engine
 from db.models import Item  # noqa: F401
 
