@@ -23,8 +23,8 @@ text = st.text_area(
     label_visibility="collapsed",
 )
 
-column1, column2 = st.columns([1, 4])
-with column1:
+_, mid, _ = st.columns([3, 2, 3])
+with mid:
     submit_button = st.button(
         "Send text",
         type="primary",
