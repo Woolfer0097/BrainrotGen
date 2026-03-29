@@ -38,9 +38,6 @@ jobs:
       - name: Configure Poetry
         run: poetry config virtualenvs.create false
 
-      - name: Install pip-audit
-        run: pip install pip-audit
-
       - name: Install dependencies
         run: poetry install --no-interaction --no-root --with dev
 
@@ -64,7 +61,7 @@ jobs:
           poetry run pytest --cov=. --cov-report=term >> report.md 2>&1 || true
 
           echo -e "\n### > Security Audit (pip-audit)" >> report.md
-          pip-audit --format markdown >> report.md 2>&1 || true
+          poetry run pip-audit --format markdown >> report.md 2>&1 || true
 
       - name: Comment PR with report
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && github.actor != 'dependabot[bot]'
@@ -87,5 +84,5 @@ jobs:
           poetry run flake8 .
           poetry run radon cc . --fail C
           poetry run radon mi . --fail B
-          pip-audit --fail-on high
+          poetry run pip-audit --fail-on high
           poetry run pytest --cov=. --cov-fail-under=80
