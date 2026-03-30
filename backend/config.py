@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
     debug: bool = False
+    elevenlabs_api_key: str = ""
+    voice_id: str = "eleven_flash_v2_5"
+    output_format: str = "mp3_44100_128"
 
     sqlite_db_path: str = "./app.db"
 
