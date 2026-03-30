@@ -1,16 +1,14 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
-class ItemBase(BaseModel):
+class ItemCreate(BaseModel):
     name: str
-    description: str | None = None
+    description: str
 
 
-class ItemCreate(ItemBase):
-    pass
-
-
-class ItemRead(ItemBase):
+class ItemRead(BaseModel):
     id: int
+    name: str
+    description: str
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = {"from_attributes": True}

@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Simple FastAPI boilerplate with SQLite and SQLAlchemy"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{ include = "backend" }, { include = "db" }]
+packages = [{ include = "app" }, { include = "backend" }, { include = "db" }]
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -20,6 +20,8 @@ uvicorn = { extras = ["standard"], version = "^0.30.0" }
 gtts = "^2.5.4"
 pydub = "^0.25.1"
 elevenlabs = "^2.40.0"
+streamlit = "^1.55.0"
+requests = "^2.33.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^26.3.1"

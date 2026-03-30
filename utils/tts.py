@@ -1,7 +1,7 @@
-from gtts import gTTS
+import re
 from io import BytesIO
 
-import re
+from gtts import gTTS
 from pydub import AudioSegment
 
 
@@ -28,5 +28,5 @@ def estimate_duration(text: str, wpm: int = 150) -> float:
 
 def count_duration(buffer: BytesIO) -> int:
     audio = AudioSegment.from_file(buffer, format="mp3")
-    duration_sec = len(audio) / 1000
+    duration_sec = len(audio) // 1000
     return duration_sec
