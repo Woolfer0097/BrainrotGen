@@ -209,4 +209,4 @@ __marimo__/
 app.db
 .idea
 poetry.lock
-media
+media/

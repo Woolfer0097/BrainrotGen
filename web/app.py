@@ -1,5 +1,6 @@
 import requests
 import streamlit as st
+
 from backend.config import settings
 
 API_BASE = settings.api_base_url.rstrip("/")

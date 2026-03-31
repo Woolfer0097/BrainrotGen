@@ -39,7 +39,7 @@ class VideoGenerationService:
         "MarginV=120"
     )
 
-    def __init__(self, elevenlabs_client: ElevenLabsClient | None = None):
+    def __init__(self, elevenlabs_client: ElevenLabsClient | None = None) -> None:
         self.elevenlabs_client = elevenlabs_client or ElevenLabsClient()
 
     def generate(self, text: str) -> bytes:

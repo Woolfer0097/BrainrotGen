@@ -20,7 +20,8 @@ def generate_video(body: GenerateBody) -> Response:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(
-            status_code=500, detail=f"Unexpected generation error: {exc}"
+            status_code=500,
+            detail=f"Unexpected generation error: {exc}",
         ) from exc
 
     return Response(content=video_bytes, media_type="video/mp4")
