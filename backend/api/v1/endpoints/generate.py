@@ -1,8 +1,11 @@
-from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+from backend.service import VideoGenerationError, VideoGenerationService
+
 router = APIRouter(prefix="/generate", tags=["generate"])
+video_service = VideoGenerationService()
 
 
 class GenerateBody(BaseModel):
@@ -10,11 +13,15 @@ class GenerateBody(BaseModel):
 
 
 @router.post("/")
-def generate_video_placeholder(body: GenerateBody) -> JSONResponse:
-    return JSONResponse(
-        status_code=501,
-        content={
-            "detail": "Video generation is not implemented yet.",
-            "text_length": len(body.text),
-        },
-    )
+def generate_video(body: GenerateBody) -> Response:
+    try:
+        video_bytes = video_service.generate(body.text)
+    except VideoGenerationError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected generation error: {exc}",
+        ) from exc
+
+    return Response(content=video_bytes, media_type="video/mp4")

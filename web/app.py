@@ -1,12 +1,10 @@
-import os
-
 import requests
 import streamlit as st
 
-# Base URL for the API
-API_BASE = os.getenv("STREAMLIT_API_URL", "http://127.0.0.1:8000").rstrip("/")
-# TODO: change path to actual path
-GENERATE_PATH = "/api/v1/generate"
+from backend.config import settings
+
+API_BASE = settings.api_base_url.rstrip("/")
+GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
 GENERATE_URL = f"{API_BASE}{GENERATE_PATH}"
 
 st.set_page_config(
@@ -38,7 +36,7 @@ if "last_error" not in st.session_state:
 
 if submit_button:
     st.session_state.last_error = None
-    st.session_state.last_video = None 
+    st.session_state.last_video = None
 
     if not (text or "").strip():
         st.session_state.last_error = "Please enter some text to generate a video"
@@ -48,7 +46,7 @@ if submit_button:
                 r = requests.post(
                     GENERATE_URL,
                     json={"text": text},
-                    timeout=120,
+                    timeout=300,
                 )
             except requests.exceptions.RequestException as e:
                 st.session_state.last_error = f"Error generating video: {e}"
