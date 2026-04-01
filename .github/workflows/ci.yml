@@ -82,7 +82,17 @@ jobs:
         run: |
           poetry run black --check .
           poetry run flake8 .
-          poetry run radon cc . --fail C
-          poetry run radon mi . --fail B
+          cc_violations="$(poetry run radon cc . -n D -s)"
+          if [ -n "$cc_violations" ]; then
+            echo "Cyclomatic complexity check failed (found D/E/F blocks):"
+            echo "$cc_violations"
+            exit 1
+          fi
+          mi_violations="$(poetry run radon mi . -n C -s)"
+          if [ -n "$mi_violations" ]; then
+            echo "Maintainability index check failed (found C blocks):"
+            echo "$mi_violations"
+            exit 1
+          fi
           poetry run pip-audit --fail-on high
           poetry run pytest --cov=. --cov-fail-under=80
