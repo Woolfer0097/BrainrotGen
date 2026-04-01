@@ -5,10 +5,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 import streamlit as st
+from backend.config import settings
 
-API_BASE = os.getenv("STREAMLIT_API_URL", "http://127.0.0.1:8000").rstrip("/")
-API_V1_PREFIX = os.getenv("STREAMLIT_API_V1_PREFIX", "/api/v1").rstrip("/")
-GENERATE_PATH = f"{API_V1_PREFIX}/generate"
+
+API_BASE = settings.api_base_url.rstrip("/")
+GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
+API_V1_PREFIX = settings.api_v1_prefix.rstrip("/")
 GENERATE_URL = f"{API_BASE}{GENERATE_PATH}"
 
 st.set_page_config(
