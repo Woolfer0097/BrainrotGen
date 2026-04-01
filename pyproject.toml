@@ -19,6 +19,7 @@ sqlalchemy = "^2.0.35"
 uvicorn = { extras = ["standard"], version = "^0.30.0" }
 gtts = "^2.5.4"
 pydub = "^0.25.1"
+elevenlabs = "^2.40.0"
 streamlit = "^1.55.0"
 requests = "^2.33.0"
 
