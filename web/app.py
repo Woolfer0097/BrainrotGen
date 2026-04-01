@@ -7,7 +7,6 @@ import requests
 import streamlit as st
 from backend.config import settings
 
-
 API_BASE = settings.api_base_url.rstrip("/")
 GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
 API_V1_PREFIX = settings.api_v1_prefix.rstrip("/")
@@ -63,7 +62,9 @@ if submit_button:
     if not login_ok:
         st.session_state.last_error = "Login is required"
     elif not (text or "").strip():
-        st.session_state.last_error = "Please enter some text to generate a video"
+        st.session_state.last_error = (
+            "Please enter some text to generate a video"
+        )
     else:
         status_placeholder = st.empty()
         try:
@@ -91,7 +92,12 @@ if submit_button:
             status_placeholder.empty()
 
         if not st.session_state.last_error:
-            ct = (r.headers.get("content-type") or "").split(";")[0].strip().lower()
+            ct = (
+                (r.headers.get("content-type") or "")
+                .split(";")[0]
+                .strip()
+                .lower()
+            )
             if r.ok and ct.startswith("video/"):
                 st.session_state.last_video = r.content
             elif r.ok and ct == "application/json":
@@ -100,7 +106,9 @@ if submit_button:
                     + r.text[:1000]
                 )
             else:
-                st.session_state.last_error = f"HTTP {r.status_code}: {r.text[:1000]}"
+                st.session_state.last_error = (
+                    f"HTTP {r.status_code}: {r.text[:1000]}"
+                )
 
 if st.session_state.last_error:
     st.error(st.session_state.last_error)

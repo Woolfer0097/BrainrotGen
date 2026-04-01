@@ -42,7 +42,9 @@ class RequestPoller:
         self.batch_size = max(1, batch_size)
         self.artifacts_dir = artifacts_dir or REQUEST_ARTIFACTS_DIR
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
-        self.state_path = state_path or (self.artifacts_dir / ".poller_state.json")
+        self.state_path = state_path or (
+            self.artifacts_dir / ".poller_state.json"
+        )
         self.session_factory = session_factory
         self.video_service = video_service or VideoGenerationService()
 
@@ -126,7 +128,9 @@ class RequestPoller:
             "request_date": request.date.isoformat(),
             "text": request.text,
             "duration": request.duration,
-            "processed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "processed_at": datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat(),
         }
         try:
             video_bytes, audio_bytes = self.video_service.generate_with_audio(
@@ -170,7 +174,9 @@ class RequestPoller:
     def _save_last_processed_id(self, request_id: int) -> None:
         payload = {
             "last_processed_id": request_id,
-            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "updated_at": datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat(),
         }
         self._write_json(self.state_path, payload)
 

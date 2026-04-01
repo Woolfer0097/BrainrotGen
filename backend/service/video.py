@@ -39,7 +39,9 @@ class VideoGenerationService:
         "MarginV=120"
     )
 
-    def __init__(self, elevenlabs_client: ElevenLabsClient | None = None) -> None:
+    def __init__(
+        self, elevenlabs_client: ElevenLabsClient | None = None
+    ) -> None:
         self.elevenlabs_client = elevenlabs_client or ElevenLabsClient()
 
     def generate(self, text: str) -> bytes:
@@ -51,7 +53,9 @@ class VideoGenerationService:
         return video_bytes, audio_bytes
 
     def _generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
-        response = self.elevenlabs_client.text_to_speech_with_timestamps(text=text)
+        response = self.elevenlabs_client.text_to_speech_with_timestamps(
+            text=text
+        )
         payload = self._to_dict(response)
 
         audio_bytes = self._decode_audio(payload)
@@ -96,20 +100,28 @@ class VideoGenerationService:
 
     @staticmethod
     def _decode_audio(payload: dict[str, Any]) -> bytes:
-        audio_base64 = payload.get("audio_base_64") or payload.get("audio_base64")
+        audio_base64 = payload.get("audio_base_64") or payload.get(
+            "audio_base64"
+        )
         if not audio_base64:
             raise VideoGenerationError("Missing audio payload from ElevenLabs")
 
         try:
             return base64.b64decode(audio_base64, validate=True)
         except (ValueError, TypeError) as exc:
-            raise VideoGenerationError("Failed to decode ElevenLabs audio") from exc
+            raise VideoGenerationError(
+                "Failed to decode ElevenLabs audio"
+            ) from exc
 
     @staticmethod
     def _extract_alignment(payload: dict[str, Any]) -> dict[str, Any]:
-        alignment = payload.get("normalized_alignment") or payload.get("alignment")
+        alignment = payload.get("normalized_alignment") or payload.get(
+            "alignment"
+        )
         if alignment is None:
-            raise VideoGenerationError("Missing alignment in ElevenLabs response")
+            raise VideoGenerationError(
+                "Missing alignment in ElevenLabs response"
+            )
 
         if isinstance(alignment, dict):
             return alignment
@@ -218,7 +230,9 @@ class VideoGenerationService:
             lines.append("")
 
         if not lines:
-            raise VideoGenerationError("Failed to build subtitles from alignment")
+            raise VideoGenerationError(
+                "Failed to build subtitles from alignment"
+            )
 
         return "\n".join(lines)
 
