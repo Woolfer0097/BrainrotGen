@@ -25,6 +25,41 @@ class VideoGenerationError(RuntimeError):
     pass
 
 
+def estimate_duration(text: str) -> int:
+    words = text.split()
+    if not words:
+        return 1
+    word_count = len(words)
+    estimated_seconds = word_count * 0.4
+    return max(1, int(round(estimated_seconds)))
+
+
+def count_duration(audio_bytes: bytes) -> int:
+    if not audio_bytes:
+        return 0
+    try:
+        if audio_bytes[:4] == b"ID3":
+            offset = 10
+        elif audio_bytes[:2] == b"\xff\xfb":
+            offset = 0
+        else:
+            return max(1, len(audio_bytes) // 2000)
+        found_data = False
+        while offset < len(audio_bytes) - 10:
+            if audio_bytes[offset : offset + 4] == b"data":
+                found_data = True
+                offset += 8
+                break
+            offset += 1
+        if found_data:
+            audio_data_size = len(audio_bytes) - offset
+            if audio_data_size > 0:
+                return max(1, audio_data_size // 2000)
+        return max(1, len(audio_bytes) // 2000)
+    except Exception:
+        return max(1, len(audio_bytes) // 2000)
+
+
 class VideoGenerationService:
     SUBTITLE_STYLE = (
         "FontName=DejaVu Sans,"
@@ -43,6 +78,14 @@ class VideoGenerationService:
         self.elevenlabs_client = elevenlabs_client or ElevenLabsClient()
 
     def generate(self, text: str) -> bytes:
+        video_bytes, _ = self._generate_with_audio(text)
+        return video_bytes
+
+    def generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
+        video_bytes, audio_bytes = self._generate_with_audio(text)
+        return video_bytes, audio_bytes
+
+    def _generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
         response = self.elevenlabs_client.text_to_speech_with_timestamps(text=text)
         payload = self._to_dict(response)
 
@@ -74,7 +117,7 @@ class VideoGenerationService:
                 output_path=output_path,
             )
 
-            return output_path.read_bytes()
+            return output_path.read_bytes(), audio_bytes
 
     @staticmethod
     def _to_dict(value: Any) -> dict[str, Any]:
