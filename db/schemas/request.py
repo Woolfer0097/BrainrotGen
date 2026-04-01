@@ -1,5 +1,4 @@
 import datetime
-from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -11,7 +10,7 @@ class RequestCreate(BaseModel):
 
 
 class RequestRead(BaseModel):
-    id: UUID
+    id: int
     login: str
     date: datetime.datetime
     text: str
