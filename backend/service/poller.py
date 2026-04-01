@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Event, Thread
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.service.video import VideoGenerationService
+from utils.tts import count_duration
 from db.connector import SessionLocal
 from db.models.request import Request
 
@@ -128,9 +129,21 @@ class RequestPoller:
             "processed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         }
         try:
-            video_bytes = self.video_service.generate(request.text)
+            video_bytes, audio_bytes = self.video_service.generate_with_audio(
+                request.text,
+            )
             (request_dir / "video.mp4").write_bytes(video_bytes)
+            actual_duration = count_duration(audio_bytes)
+            with self.session_factory() as db:
+                stmt = (
+                    update(Request)
+                    .where(Request.id == request_id)
+                    .values(duration=actual_duration)
+                )
+                db.execute(stmt)
+                db.commit()
             meta["ok"] = True
+            meta["actual_duration"] = actual_duration
             self._write_json(request_dir / "meta.json", meta)
             return True
         except Exception as exc:
