@@ -8,7 +8,8 @@ from threading import Event, Thread
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, sessionmaker
 
-from backend.service.video import VideoGenerationService, count_duration
+from backend.service.video import VideoGenerationService
+from utils.tts import count_duration
 from db.connector import SessionLocal
 from db.models.request import Request
 
