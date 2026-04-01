@@ -43,6 +43,14 @@ class VideoGenerationService:
         self.elevenlabs_client = elevenlabs_client or ElevenLabsClient()
 
     def generate(self, text: str) -> bytes:
+        video_bytes, _ = self._generate_with_audio(text)
+        return video_bytes
+
+    def generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
+        video_bytes, audio_bytes = self._generate_with_audio(text)
+        return video_bytes, audio_bytes
+
+    def _generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
         response = self.elevenlabs_client.text_to_speech_with_timestamps(text=text)
         payload = self._to_dict(response)
 
@@ -74,7 +82,7 @@ class VideoGenerationService:
                 output_path=output_path,
             )
 
-            return output_path.read_bytes()
+            return output_path.read_bytes(), audio_bytes
 
     @staticmethod
     def _to_dict(value: Any) -> dict[str, Any]:
