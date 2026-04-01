@@ -73,7 +73,8 @@ class RequestPoller:
 
     def run_forever(self) -> None:
         logger.info(
-            "Request poller started: batch_size=%s, poll_interval_seconds=%s, last_id=%s",
+            "Request poller started: "
+            "batch_size=%s, poll_interval_seconds=%s, last_id=%s",
             self.batch_size,
             self.poll_interval_seconds,
             self._last_processed_id,
