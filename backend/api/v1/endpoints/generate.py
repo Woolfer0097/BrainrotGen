@@ -1,12 +1,12 @@
 import datetime
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from backend.service import VideoGenerationError, VideoGenerationService
 from backend.service.quota import DAILY_QUOTA_SECONDS, can_accept_request
-from backend.service.video import estimate_duration
+from utils.tts import estimate_duration
 from db.connector import SessionLocal
 from db.models.request import Request as RequestModel
 
