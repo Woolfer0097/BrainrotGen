@@ -4,30 +4,14 @@ FastAPI backend and Streamlit web UI, Poetry, SQLite, SQLAlchemy.
 
 ## Project structure
 
-```text
-app/                         # entry shim: `uvicorn app.main:app` → re-exports `backend.main`
-  main.py
-backend/
-  main.py                    # FastAPI `app`, routers, startup
-  config.py
-  api/v1/
-    router.py
-    endpoints/
-      health.py
-      items.py
-      generate.py
-db/
-  connector.py               # engine, sessions, Base
-  models/
-  schemas/
-web/
-  app.py                     # Streamlit UI
-utils/
-  tts.py
-```
+
 
 ## Quick start
 
+1. Ask for API KEY of elevenlabs
+2. Unzip media.zip
+
+3. 
 ```bash
 poetry install
 cp .env.example .env
@@ -36,4 +20,11 @@ poetry run uvicorn app.main:app --reload
 
 API docs: http://127.0.0.1:8000/docs  
 
+```bash
 Streamlit (other terminal): `poetry run streamlit run web/app.py`
+```
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://172.18.0.1:8501
