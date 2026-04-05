@@ -21,6 +21,12 @@ class TimedWord:
     end_seconds: float
 
 
+@dataclass(frozen=True)
+class AudioInputSpec:
+    extension: str
+    ffmpeg_input_args: tuple[str, ...]
+
+
 class VideoGenerationError(RuntimeError):
     pass
 
@@ -69,10 +75,11 @@ class VideoGenerationService:
         cues = self._chunk_words(words)
         subtitles_srt = self._build_srt(cues)
         background_video = self._pick_random_video()
+        audio_input = self._audio_input_spec()
 
         with TemporaryDirectory(prefix="brainrotgen_") as tmp_dir:
             tmp_path = Path(tmp_dir)
-            audio_path = tmp_path / f"voice.{self._audio_extension()}"
+            audio_path = tmp_path / f"voice.{audio_input.extension}"
             subtitles_path = tmp_path / "subtitles.srt"
             output_path = tmp_path / "brainrot_video.mp4"
 
@@ -82,6 +89,7 @@ class VideoGenerationService:
             self._render_video(
                 background_video=background_video,
                 audio_path=audio_path,
+                audio_input_args=audio_input.ffmpeg_input_args,
                 subtitles_path=subtitles_path,
                 output_path=output_path,
             )
@@ -265,23 +273,79 @@ class VideoGenerationService:
         return random.choice(candidates)
 
     @staticmethod
-    def _audio_extension() -> str:
+    def _audio_input_spec() -> AudioInputSpec:
         output_format = settings.output_format.lower()
         if output_format.startswith("mp3"):
-            return "mp3"
+            return AudioInputSpec(extension="mp3", ffmpeg_input_args=())
         if output_format.startswith("wav"):
-            return "wav"
+            return AudioInputSpec(extension="wav", ffmpeg_input_args=())
         if output_format.startswith("opus"):
-            return "opus"
+            return AudioInputSpec(extension="opus", ffmpeg_input_args=())
+        if output_format.startswith("pcm_"):
+            sample_rate = VideoGenerationService._sample_rate_from_format(
+                output_format
+            )
+            return AudioInputSpec(
+                extension="pcm",
+                ffmpeg_input_args=(
+                    "-f",
+                    "s16le",
+                    "-ar",
+                    sample_rate,
+                    "-ac",
+                    "1",
+                ),
+            )
+        if output_format.startswith("ulaw_"):
+            sample_rate = VideoGenerationService._sample_rate_from_format(
+                output_format
+            )
+            return AudioInputSpec(
+                extension="ulaw",
+                ffmpeg_input_args=(
+                    "-f",
+                    "mulaw",
+                    "-ar",
+                    sample_rate,
+                    "-ac",
+                    "1",
+                ),
+            )
+        if output_format.startswith("alaw_"):
+            sample_rate = VideoGenerationService._sample_rate_from_format(
+                output_format
+            )
+            return AudioInputSpec(
+                extension="alaw",
+                ffmpeg_input_args=(
+                    "-f",
+                    "alaw",
+                    "-ar",
+                    sample_rate,
+                    "-ac",
+                    "1",
+                ),
+            )
+
         raise VideoGenerationError(
             "Unsupported ElevenLabs output format for ffmpeg pipeline. "
-            "Use mp3_*, wav_* or opus_*."
+            "Use mp3_*, wav_*, opus_*, pcm_*, ulaw_* or alaw_*."
         )
+
+    @staticmethod
+    def _sample_rate_from_format(output_format: str) -> str:
+        parts = output_format.split("_")
+        if len(parts) < 2 or not parts[1].isdigit():
+            raise VideoGenerationError(
+                f"Invalid ElevenLabs output format: {output_format!r}"
+            )
+        return parts[1]
 
     def _render_video(
         self,
         background_video: Path,
         audio_path: Path,
+        audio_input_args: tuple[str, ...],
         subtitles_path: Path,
         output_path: Path,
     ) -> None:
@@ -300,6 +364,7 @@ class VideoGenerationService:
             "-1",
             "-i",
             str(background_video),
+            *audio_input_args,
             "-i",
             str(audio_path),
             "-vf",

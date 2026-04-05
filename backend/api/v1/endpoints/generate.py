@@ -19,7 +19,20 @@ class GenerateBody(BaseModel):
     login: str = Field(..., min_length=1, max_length=32)
 
 
-@router.post("/")
+@router.post(
+    "/",
+    response_class=Response,
+    responses={
+        200: {
+            "description": "Generated video",
+            "content": {
+                "video/mp4": {
+                    "schema": {"type": "string", "format": "binary"}
+                }
+            },
+        }
+    },
+)
 def generate_video(body: GenerateBody) -> Response:
     login = body.login
 
@@ -37,7 +50,7 @@ def generate_video(body: GenerateBody) -> Response:
             login=login,
             date=now,
             text=body.text,
-            duration=estimated,
+            duration=int(estimated),
         )
         db.add(db_request)
         db.commit()
