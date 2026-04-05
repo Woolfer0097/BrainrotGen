@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from backend.api.v1.router import router as api_v1_router
 from backend.config import settings
 from db.connector import Base, engine
-from db.models import Item  # noqa: F401
+from db.models import Request  # noqa: F401
 
 app = FastAPI(
     title=settings.app_name, version=settings.app_version, debug=settings.debug

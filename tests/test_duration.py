@@ -1,52 +1,67 @@
-# from utils.tts import count_duration
+import subprocess
+import sys
+from io import BytesIO
+from pathlib import Path
 
-#
-# class TestEstimateDuration:
-#     def test_empty_text(self) -> None:
-#         words = "".split()
-#         word_count = len(words)
-#         estimated_seconds = word_count * 0.4
-#         result = max(1, int(round(estimated_seconds)))
-#         assert result == 1
-#
-#     def test_single_word(self) -> None:
-#         words = "hello".split()
-#         word_count = len(words)
-#         estimated_seconds = word_count * 0.4
-#         result = max(1, int(round(estimated_seconds)))
-#         assert result == 1
-#
-#     def test_two_words(self) -> None:
-#         words = "hello world".split()
-#         word_count = len(words)
-#         estimated_seconds = word_count * 0.4
-#         result = max(1, int(round(estimated_seconds)))
-#         assert result == 1
-#
-#     def test_five_words(self) -> None:
-#         words = "one two three four five".split()
-#         word_count = len(words)
-#         estimated_seconds = word_count * 0.4
-#         result = max(1, int(round(estimated_seconds)))
-#         assert result == 2
-#
-#
-# class TestCountDuration:
-#     def test_empty_bytes(self) -> None:
-#         result = count_duration(b"")
-#         assert result == 0
-#
-#     def test_mp3_with_id3(self) -> None:
-#         id3_header = b"ID3\x04\x00\x00\x00\x00\x00\x00data" + b"A" * 2000
-#         result = count_duration(id3_header)
-#         assert result >= 1
-#
-#     def test_mp3_frame_header(self) -> None:
-#         mp3_frame = b"\xff\xfb" + b"\x00" * 1000
-#         result = count_duration(mp3_frame)
-#         assert result >= 1
-#
-#     def test_unknown_format(self) -> None:
-#         unknown = b"ABC" * 500
-#         result = count_duration(unknown)
-#         assert result >= 1
+import pytest
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from utils import tts
+
+
+def test_estimate_duration_includes_punctuation_pauses() -> None:
+    result = tts.estimate_duration("Hello, world!")
+    assert result == pytest.approx(1.2)
+
+
+def test_count_duration_returns_zero_for_empty_audio() -> None:
+    result = tts.count_duration(b"")
+    assert result == 0
+
+
+def test_count_duration_uses_ffprobe_value(monkeypatch) -> None:
+    def fake_run(
+        command: list[str],
+        *,
+        input: bytes,
+        capture_output: bool,
+        check: bool,
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert command[0] == "ffprobe"
+        assert input == b"audio-bytes"
+        assert capture_output is True
+        assert check is False
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=b"2.4\n",
+            stderr=b"",
+        )
+
+    monkeypatch.setattr(tts.subprocess, "run", fake_run)
+    result = tts.count_duration(BytesIO(b"audio-bytes"))
+    assert result == 2
+
+
+def test_count_duration_falls_back_when_ffprobe_fails(
+    monkeypatch,
+) -> None:
+    def fake_run(
+        command: list[str],
+        *,
+        input: bytes,
+        capture_output: bool,
+        check: bool,
+    ) -> subprocess.CompletedProcess[bytes]:
+        return subprocess.CompletedProcess(
+            command,
+            1,
+            stdout=b"",
+            stderr=b"invalid stream",
+        )
+
+    monkeypatch.setattr(tts.subprocess, "run", fake_run)
+    result = tts.count_duration(b"A" * 64_000)
+    assert result == 4
