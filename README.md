@@ -2,10 +2,6 @@
 
 FastAPI backend and Streamlit web UI, Poetry, SQLite, SQLAlchemy.
 
-## Project structure
-
-
-
 ## Quick start
 
 1. Ask for API KEY of elevenlabs
