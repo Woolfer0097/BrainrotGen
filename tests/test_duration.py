@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from utils import tts
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
-
-from utils import tts
 
 
 def test_estimate_duration_includes_punctuation_pauses() -> None:

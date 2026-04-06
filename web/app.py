@@ -7,11 +7,11 @@ from pathlib import Path
 import requests
 import streamlit as st
 
+from backend.config import settings
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-from backend.config import settings
 
 API_BASE = settings.api_base_url.rstrip("/")
 GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
