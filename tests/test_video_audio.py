@@ -7,8 +7,8 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.config import settings
 import backend.service.video as video_module
+from backend.config import settings
 from backend.service.video import VideoGenerationError, VideoGenerationService
 
 
@@ -85,7 +85,9 @@ def test_probe_video_duration_seconds_parses_ffprobe(monkeypatch) -> None:
         assert check is False
         assert capture_output is True
         assert text is True
-        return subprocess.CompletedProcess(command, 0, stdout="8.4\n", stderr="")
+        return subprocess.CompletedProcess(
+            command, 0, stdout="8.4\n", stderr=""
+        )
 
     monkeypatch.setattr(video_module.subprocess, "run", fake_run)
     duration = VideoGenerationService._probe_video_duration_seconds(

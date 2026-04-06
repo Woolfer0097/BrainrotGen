@@ -77,9 +77,7 @@ class VideoGenerationService:
 
         cues = self._chunk_words(words)
         subtitles_srt = self._build_srt(cues)
-        background_video, background_start_offset = (
-            self._pick_random_video()
-        )
+        background_video, background_start_offset = self._pick_random_video()
         background_music_path = self._background_music_path()
         audio_input = self._audio_input_spec()
 
@@ -294,8 +292,7 @@ class VideoGenerationService:
         path = MEDIA_DIR / BACKGROUND_MUSIC_FILENAME
         if not path.exists() or not path.is_file():
             raise VideoGenerationError(
-                "Background music file does not exist: "
-                f"{path.as_posix()}"
+                "Background music file does not exist: " f"{path.as_posix()}"
             )
         return path
 

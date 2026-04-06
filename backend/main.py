@@ -2,10 +2,8 @@ from fastapi import FastAPI
 
 from backend.api.v1.router import router as api_v1_router
 from backend.config import settings
-from backend.service.poller_runtime import (
-    start_request_poller,
-    stop_request_poller,
-)
+from backend.service.poller_runtime import (start_request_poller,
+                                            stop_request_poller)
 from db.connector import Base, engine
 from db.models import Request  # noqa: F401
 

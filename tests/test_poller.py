@@ -58,7 +58,9 @@ def insert_request(
 
 
 class SuccessfulVideoService:
-    def __init__(self, video_bytes: bytes = b"video", audio_bytes: bytes = b"audio"):
+    def __init__(
+        self, video_bytes: bytes = b"video", audio_bytes: bytes = b"audio"
+    ):
         self.video_bytes = video_bytes
         self.audio_bytes = audio_bytes
         self.calls: list[str] = []
@@ -173,7 +175,9 @@ def test_process_request_writes_artifacts_and_updates_duration(
         text="ship this",
         duration=2,
     )
-    service = SuccessfulVideoService(video_bytes=b"mp4-bytes", audio_bytes=b"raw-audio")
+    service = SuccessfulVideoService(
+        video_bytes=b"mp4-bytes", audio_bytes=b"raw-audio"
+    )
     monkeypatch.setattr(poller_module, "count_duration", lambda audio: 9)
     poller = RequestPoller(
         artifacts_dir=tmp_path / "artifacts",
@@ -240,8 +244,12 @@ def test_poll_once_aggregates_results_updates_state_and_advances_cursor(
     session_factory: sessionmaker,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    first = insert_request(session_factory, login="alice", text="ok request", duration=1)
-    second = insert_request(session_factory, login="alice", text="please fail", duration=2)
+    first = insert_request(
+        session_factory, login="alice", text="ok request", duration=1
+    )
+    second = insert_request(
+        session_factory, login="alice", text="please fail", duration=2
+    )
     monkeypatch.setattr(poller_module, "count_duration", lambda audio: 6)
     state_path = tmp_path / "state.json"
     service = ConditionalVideoService()
@@ -260,15 +268,22 @@ def test_poll_once_aggregates_results_updates_state_and_advances_cursor(
     assert result.failed == 1
     assert result.last_processed_id == second.id
     assert poller.last_processed_id == second.id
-    assert json.loads(state_path.read_text(encoding="utf-8"))["last_processed_id"] == second.id
+    assert (
+        json.loads(state_path.read_text(encoding="utf-8"))["last_processed_id"]
+        == second.id
+    )
     assert service.calls == ["ok request", "please fail"]
 
     first_dir = tmp_path / "artifacts" / str(first.id)
     second_dir = tmp_path / "artifacts" / str(second.id)
     assert (first_dir / "video.mp4").read_bytes() == b"video:ok request"
 
-    first_meta = json.loads((first_dir / "meta.json").read_text(encoding="utf-8"))
-    second_meta = json.loads((second_dir / "meta.json").read_text(encoding="utf-8"))
+    first_meta = json.loads(
+        (first_dir / "meta.json").read_text(encoding="utf-8")
+    )
+    second_meta = json.loads(
+        (second_dir / "meta.json").read_text(encoding="utf-8")
+    )
     assert first_meta["ok"] is True
     assert first_meta["actual_duration"] == 6
     assert second_meta["ok"] is False

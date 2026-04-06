@@ -23,8 +23,6 @@ PROCESSING_CHECK_INTERVAL_SECONDS = 0.25
 class GenerateBody(BaseModel):
     text: str = Field(..., min_length=1, max_length=500)
 
-
-
     login: str = Field(..., min_length=1, max_length=32)
 
 
