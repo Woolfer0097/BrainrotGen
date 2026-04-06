@@ -12,6 +12,9 @@ from backend.config import settings
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MEDIA_DIR = PROJECT_ROOT / "media"
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".webm", ".m4v"}
+BACKGROUND_MUSIC_FILENAME = "musica.m4a"
+BACKGROUND_MUSIC_OFFSET_SECONDS = 37.0
+BACKGROUND_MUSIC_VOLUME = 0.12
 
 
 @dataclass(frozen=True)
@@ -74,7 +77,10 @@ class VideoGenerationService:
 
         cues = self._chunk_words(words)
         subtitles_srt = self._build_srt(cues)
-        background_video = self._pick_random_video()
+        background_video, background_start_offset = (
+            self._pick_random_video()
+        )
+        background_music_path = self._background_music_path()
         audio_input = self._audio_input_spec()
 
         with TemporaryDirectory(prefix="brainrotgen_") as tmp_dir:
@@ -88,6 +94,8 @@ class VideoGenerationService:
 
             self._render_video(
                 background_video=background_video,
+                background_start_offset=background_start_offset,
+                background_music_path=background_music_path,
                 audio_path=audio_path,
                 audio_input_args=audio_input.ffmpeg_input_args,
                 subtitles_path=subtitles_path,
@@ -253,7 +261,7 @@ class VideoGenerationService:
         return f"{hours:02}:{minutes:02}:{secs:02},{ms:03}"
 
     @staticmethod
-    def _pick_random_video() -> Path:
+    def _pick_random_video() -> tuple[Path, float]:
         if not MEDIA_DIR.exists():
             raise VideoGenerationError(
                 f"Media folder does not exist: {MEDIA_DIR.as_posix()}"
@@ -270,7 +278,73 @@ class VideoGenerationService:
                 f"No video files found in media folder: {MEDIA_DIR.as_posix()}"
             )
 
-        return random.choice(candidates)
+        background_video = random.choice(candidates)
+        duration_seconds = (
+            VideoGenerationService._probe_video_duration_seconds(
+                background_video
+            )
+        )
+        start_offset = VideoGenerationService._random_start_offset_seconds(
+            duration_seconds
+        )
+        return background_video, start_offset
+
+    @staticmethod
+    def _background_music_path() -> Path:
+        path = MEDIA_DIR / BACKGROUND_MUSIC_FILENAME
+        if not path.exists() or not path.is_file():
+            raise VideoGenerationError(
+                "Background music file does not exist: "
+                f"{path.as_posix()}"
+            )
+        return path
+
+    @staticmethod
+    def _probe_video_duration_seconds(video_path: Path) -> float | None:
+        command = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(video_path),
+        ]
+        try:
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+        except OSError:
+            return None
+
+        if completed.returncode != 0:
+            return None
+
+        try:
+            duration = float(completed.stdout.strip())
+        except ValueError:
+            return None
+
+        if duration <= 0:
+            return None
+        return duration
+
+    @staticmethod
+    def _random_start_offset_seconds(duration_seconds: float | None) -> float:
+        if duration_seconds is None:
+            return 0.0
+
+        # Keep some tail room so ffmpeg can decode frames after the seek.
+        max_offset = duration_seconds - 0.25
+        if max_offset <= 0:
+            return 0.0
+
+        min_offset = min(0.25, max_offset)
+        return random.uniform(min_offset, max_offset)
 
     @staticmethod
     def _audio_input_spec() -> AudioInputSpec:
@@ -344,6 +418,8 @@ class VideoGenerationService:
     def _render_video(
         self,
         background_video: Path,
+        background_start_offset: float,
+        background_music_path: Path,
         audio_path: Path,
         audio_input_args: tuple[str, ...],
         subtitles_path: Path,
@@ -362,17 +438,33 @@ class VideoGenerationService:
             "-y",
             "-stream_loop",
             "-1",
+            "-ss",
+            f"{background_start_offset:.3f}",
             "-i",
             str(background_video),
             *audio_input_args,
             "-i",
             str(audio_path),
+            "-stream_loop",
+            "-1",
+            "-ss",
+            f"{BACKGROUND_MUSIC_OFFSET_SECONDS:.3f}",
+            "-i",
+            str(background_music_path),
             "-vf",
             video_filter,
+            "-filter_complex",
+            (
+                "[1:a]aresample=async=1:first_pts=0[voice];"
+                f"[2:a]volume={BACKGROUND_MUSIC_VOLUME:.3f},"
+                "aresample=async=1:first_pts=0[music];"
+                "[voice][music]amix=inputs=2:"
+                "duration=first:dropout_transition=2[aout]"
+            ),
             "-map",
             "0:v:0",
             "-map",
-            "1:a:0",
+            "[aout]",
             "-c:v",
             "libx264",
             "-preset",
