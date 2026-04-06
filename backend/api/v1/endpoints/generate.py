@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field
 from backend.service.poller import REQUEST_ARTIFACTS_DIR
 from backend.service.poller_runtime import start_request_poller
 from backend.service.quota import DAILY_QUOTA_SECONDS, can_accept_request
-from utils.tts import estimate_duration
 from db.connector import SessionLocal
 from db.models.request import Request as RequestModel
+from utils.tts import estimate_duration
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 

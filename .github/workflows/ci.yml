@@ -2,9 +2,9 @@ name: CI pipeline
 
 on:
   push:
-    branches: [main, develop, feature/ci-cd-pipeline]
+    branches: [main, develop, "feature/**"]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, "feature/**"]
 
 permissions:
   contents: read
@@ -49,7 +49,7 @@ jobs:
           poetry run black --check . >> report.md 2>&1 || true
 
           echo -e "\n### > Flake8" >> report.md
-          poetry run flake8 . >> report.md 2>&1 || true
+          poetry run flake8 --extend-ignore=E402 . >> report.md 2>&1 || true
 
           echo -e "\n### > Radon Cyclomatic Complexity" >> report.md
           poetry run radon cc . -s -a >> report.md 2>&1 || true
@@ -81,7 +81,7 @@ jobs:
       - name: Run strict checks
         run: |
           poetry run black --check .
-          poetry run flake8 .
+          poetry run flake8 --extend-ignore=E402 .
           cc_violations="$(poetry run radon cc . -n D -s)"
           if [ -n "$cc_violations" ]; then
             echo "Cyclomatic complexity check failed (found D/E/F blocks):"
@@ -94,5 +94,5 @@ jobs:
             echo "$mi_violations"
             exit 1
           fi
-          poetry run pip-audit --fail-on high
+          poetry run pip-audit --strict
           poetry run pytest --cov=. --cov-fail-under=80

@@ -3,9 +3,9 @@ import datetime
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from utils.tts import estimate_duration
 from db.connector import Base, SessionLocal, engine
 from db.models.request import Request
+from utils.tts import estimate_duration
 
 DAILY_QUOTA_SECONDS = 300
 
