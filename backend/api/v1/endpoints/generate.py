@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 from backend.service import VideoGenerationError, VideoGenerationService
 from backend.service.quota import DAILY_QUOTA_SECONDS, can_accept_request
-from utils.tts import estimate_duration
 from db.connector import SessionLocal
 from db.models.request import Request as RequestModel
+from utils.tts import estimate_duration
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 video_service = VideoGenerationService()
@@ -26,9 +26,7 @@ class GenerateBody(BaseModel):
         200: {
             "description": "Generated video",
             "content": {
-                "video/mp4": {
-                    "schema": {"type": "string", "format": "binary"}
-                }
+                "video/mp4": {"schema": {"type": "string", "format": "binary"}}
             },
         }
     },
