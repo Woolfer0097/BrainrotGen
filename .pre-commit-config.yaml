@@ -1,24 +1,27 @@
-default_language_version:
-  python: python3
-
 repos:
-  - repo: https://github.com/psf/black
-    rev: 26.3.1
+  - repo: local
     hooks:
       - id: black
+        name: black
+        entry: poetry run black
+        language: system
+        types: [python]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 8.0.1
-    hooks:
       - id: isort
+        name: isort
+        entry: poetry run isort
+        language: system
+        types: [python]
         args: ["--profile", "black"]
 
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.3.0
-    hooks:
       - id: flake8
+        name: flake8
+        entry: poetry run flake8
+        language: system
+        types: [python]
         args:
           [
+            "--jobs=1",
             "--extend-ignore=E203,W503",
             "--per-file-ignores=tests/test_duration.py:E402,web/app.py:E402",
           ]

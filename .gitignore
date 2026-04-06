@@ -210,3 +210,4 @@ app.db
 .idea
 media/
 media.zip
+.pre-commit-cache/

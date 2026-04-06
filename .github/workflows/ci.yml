@@ -2,9 +2,9 @@ name: CI pipeline
 
 on:
   push:
-    branches: [main, develop, feature/ci-cd-pipeline]
+    branches: [main, develop, "feature/**"]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, "feature/**"]
 
 permissions:
   contents: read
