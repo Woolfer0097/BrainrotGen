@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from threading import Event, Thread
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from backend.service.video import VideoGenerationService
@@ -110,6 +110,21 @@ class RequestPoller:
         )
 
     def _fetch_next_batch(self, db: Session) -> list[Request]:
+        max_request_id = db.execute(select(func.max(Request.id))).scalar()
+        max_request_id_int = (
+            self._to_int_id(max_request_id)
+            if max_request_id is not None
+            else 0
+        )
+        if max_request_id_int < self._last_processed_id:
+            logger.warning(
+                "Poller cursor reset: last_processed_id=%s, max_request_id=%s",
+                self._last_processed_id,
+                max_request_id_int,
+            )
+            self._last_processed_id = 0
+            self._save_last_processed_id(0)
+
         stmt = (
             select(Request)
             .where(Request.id > self._last_processed_id)

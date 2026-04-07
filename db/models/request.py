@@ -8,6 +8,7 @@ from db.connector import Base
 
 class Request(Base):
     __tablename__ = "requests"
+    __table_args__ = {"sqlite_autoincrement": True}
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True

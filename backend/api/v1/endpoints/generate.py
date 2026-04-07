@@ -64,8 +64,10 @@ def generate_video(body: GenerateBody) -> Response:
         db.refresh(db_request)
 
     request_id = int(db_request.id)
+    expected_request_date = db_request.date.isoformat()
     video_bytes = _wait_for_processed_video(
         request_id=request_id,
+        expected_request_date=expected_request_date,
         timeout_seconds=PROCESSING_TIMEOUT_SECONDS,
         interval_seconds=PROCESSING_CHECK_INTERVAL_SECONDS,
     )
@@ -76,6 +78,7 @@ def generate_video(body: GenerateBody) -> Response:
 def _wait_for_processed_video(
     *,
     request_id: int,
+    expected_request_date: str,
     timeout_seconds: float,
     interval_seconds: float,
 ) -> bytes:
@@ -87,6 +90,9 @@ def _wait_for_processed_video(
     while time.monotonic() < deadline:
         if meta_path.exists():
             meta = _read_meta(meta_path)
+            if meta.get("request_date") != expected_request_date:
+                time.sleep(max(0.05, interval_seconds))
+                continue
             if meta.get("ok") is False:
                 detail = str(meta.get("error") or "Video generation failed")
                 raise HTTPException(status_code=500, detail=detail)
@@ -94,9 +100,6 @@ def _wait_for_processed_video(
                 return video_path.read_bytes()
 
         time.sleep(max(0.05, interval_seconds))
-
-    if video_path.exists():
-        return video_path.read_bytes()
 
     raise HTTPException(
         status_code=504,

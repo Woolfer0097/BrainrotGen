@@ -164,6 +164,43 @@ def test_fetch_next_batch_returns_rows_after_cursor_in_id_order(
     assert [request.id for request in batch] == [second.id, third.id]
 
 
+def test_poll_once_resets_cursor_when_database_ids_restart(
+    tmp_path: Path,
+    session_factory: sessionmaker,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    request = insert_request(session_factory, text="fresh")
+    monkeypatch.setattr(poller_module, "count_duration", lambda audio: 3)
+    state_path = tmp_path / "state.json"
+    state_path.write_text(
+        json.dumps({"last_processed_id": 50}),
+        encoding="utf-8",
+    )
+    service = SuccessfulVideoService(
+        video_bytes=b"new-video",
+        audio_bytes=b"new-audio",
+    )
+    poller = RequestPoller(
+        artifacts_dir=tmp_path / "artifacts",
+        state_path=state_path,
+        session_factory=session_factory,
+        video_service=service,
+    )
+
+    assert poller.last_processed_id == 50
+
+    result = poller.poll_once()
+
+    assert result.scanned == 1
+    assert result.succeeded == 1
+    assert result.failed == 0
+    assert result.last_processed_id == request.id
+    assert service.calls == ["fresh"]
+
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    assert payload["last_processed_id"] == request.id
+
+
 def test_process_request_writes_artifacts_and_updates_duration(
     tmp_path: Path,
     session_factory: sessionmaker,
