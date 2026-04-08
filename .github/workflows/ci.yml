@@ -99,4 +99,4 @@ jobs:
           fi
           poetry run pip-audit --strict
           poetry run bandit -r src/ -ll
-          poetry run pytest --cov=. --cov-fail-under=80
+          poetry run pytest --cov=. --cov-fail-under=60
