@@ -10,10 +10,10 @@ from sqlalchemy.orm import sessionmaker
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.service import poller as poller_module
-from backend.service.poller import RequestPoller
-from db.connector import Base
-from db.models.request import Request
+from backend.service import poller as poller_module  # noqa: E402
+from backend.service.poller import RequestPoller  # noqa: E402
+from db.connector import Base  # noqa: E402
+from db.models.request import Request  # noqa: E402
 
 
 @pytest.fixture

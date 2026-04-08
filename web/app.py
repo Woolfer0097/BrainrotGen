@@ -8,11 +8,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import requests
-import streamlit as st
+import requests  # noqa: E402
+import streamlit as st  # noqa: E402
 
-from backend.config import settings
-from backend.service.quota import DAILY_QUOTA_SECONDS
+from backend.config import settings  # noqa: E402
+from backend.service.quota import DAILY_QUOTA_SECONDS  # noqa: E402
 
 API_BASE = settings.api_base_url.rstrip("/")
 GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
@@ -22,9 +22,7 @@ GENERATE_URL = f"{API_BASE}{GENERATE_PATH}"
 API_DAILY_QUOTA_EXCEEDED_DETAIL = (
     f"Daily quota exceeded ({DAILY_QUOTA_SECONDS}s limit)"
 )
-DAILY_QUOTA_USER_MESSAGE = (
-    "Bruh, you're hitting the daily quota, buddy"
-)
+DAILY_QUOTA_USER_MESSAGE = "Bruh, you're hitting the daily quota, buddy"
 
 VIDEO_DISPLAY_WIDTH_PX = 640
 
@@ -47,7 +45,7 @@ LOADING_PHRASES = [
     "Touch grass later — first this",
     "Wait for the plot twist",
     "Sigma grindset",
-    "How about six seven"
+    "How about six seven",
 ]
 
 login = st.text_input("Login", placeholder="Your login here...")
@@ -142,9 +140,7 @@ if submit_button:
                 if detail == API_DAILY_QUOTA_EXCEEDED_DETAIL:
                     st.session_state.last_error = DAILY_QUOTA_USER_MESSAGE
                 else:
-                    st.session_state.last_error = (
-                        f"HTTP 429: {r.text[:1000]}"
-                    )
+                    st.session_state.last_error = f"HTTP 429: {r.text[:1000]}"
             else:
                 st.session_state.last_error = (
                     f"HTTP {r.status_code}: {r.text[:1000]}"
