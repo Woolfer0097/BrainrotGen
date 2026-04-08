@@ -24,3 +24,13 @@ Streamlit (other terminal): `poetry run streamlit run web/app.py`
 
   Local URL: http://localhost:8501
   Network URL: http://172.18.0.1:8501
+
+# For developers and contributors
+
+To install pre-commit jobs hook use this command:
+
+```bash
+poetry install --with dev
+poetry run pre-commit install
+poetry run pre-commit run --all-files
+```
