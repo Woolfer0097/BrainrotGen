@@ -59,6 +59,9 @@ jobs:
 
           echo -e "\n### > Tests + Coverage" >> report.md
           poetry run pytest --cov=. --cov-report=term --cov-fail-under=60 >> report.md 2>&1 || true
+          
+          echo -e "\n### > pytest result" >> report.md
+          poetry run pytest >> report.md 2>&1 || true
 
           echo -e "\n### > Security Audit (pip-audit)" >> report.md
           poetry run pip-audit --format markdown >> report.md 2>&1 || true
@@ -91,6 +94,7 @@ jobs:
             echo "$cc_violations"
             exit 1
           fi
+          poetry run pytest
           mi_violations="$(poetry run radon mi . -n C -s)"
           if [ -n "$mi_violations" ]; then
             echo "Maintainability index check failed (found C blocks):"
