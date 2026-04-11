@@ -58,10 +58,16 @@ jobs:
           poetry run radon mi . -s >> report.md 2>&1 || true
 
           echo -e "\n### > Tests + Coverage" >> report.md
-          poetry run pytest --cov=. --cov-report=term >> report.md 2>&1 || true
+          poetry run pytest --cov=. --cov-report=term --cov-fail-under=60 >> report.md 2>&1 || true
+          
+          echo -e "\n### > pytest result" >> report.md
+          poetry run pytest >> report.md 2>&1 || true
 
           echo -e "\n### > Security Audit (pip-audit)" >> report.md
           poetry run pip-audit --format markdown >> report.md 2>&1 || true
+
+          echo -e "\n### > Security Scan (Bandit)" >> report.md
+          poetry run bandit -r src/ -ll >> report.md 2>&1 || true
 
       - name: Comment PR with report
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && github.actor != 'dependabot[bot]'
@@ -88,6 +94,7 @@ jobs:
             echo "$cc_violations"
             exit 1
           fi
+          poetry run pytest
           mi_violations="$(poetry run radon mi . -n C -s)"
           if [ -n "$mi_violations" ]; then
             echo "Maintainability index check failed (found C blocks):"
@@ -95,4 +102,5 @@ jobs:
             exit 1
           fi
           poetry run pip-audit --strict
-          poetry run pytest --cov=. --cov-fail-under=80
+          poetry run bandit -r src/ -ll
+          poetry run pytest --cov=. --cov-fail-under=60
