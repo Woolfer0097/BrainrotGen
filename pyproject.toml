@@ -47,3 +47,11 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.flake8]
+max-line-length = 79
+exclude = [
+    ".venv",
+    "build",
+    "dist",
+]

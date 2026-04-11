@@ -7,9 +7,12 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-import backend.service.video as video_module
-from backend.config import settings
-from backend.service.video import VideoGenerationError, VideoGenerationService
+import backend.service.video as video_module  # noqa: E402
+from backend.config import settings  # noqa: E402
+from backend.service.video import (  # noqa: E402
+    VideoGenerationError,
+    VideoGenerationService,
+)
 
 
 def test_audio_input_spec_supports_alaw(monkeypatch) -> None:
