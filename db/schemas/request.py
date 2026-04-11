@@ -14,7 +14,9 @@ class RequestCreate(BaseModel):
 
     login: str = Field(..., description="User login for quota tracking")
     text: str = Field(..., description="Text content for TTS and subtitles")
-    duration: int = Field(..., description="Estimated video duration in seconds")
+    duration: int = Field(
+        ..., description="Estimated video duration in seconds"
+    )
 
 
 class RequestRead(BaseModel):
@@ -30,6 +32,8 @@ class RequestRead(BaseModel):
 
     id: int = Field(..., description="Unique request ID")
     login: str = Field(..., description="User login")
-    date: datetime.datetime = Field(..., description="Request creation timestamp (UTC)")
+    date: datetime.datetime = Field(
+        ..., description="Request creation timestamp (UTC)"
+    )
     text: str = Field(..., description="Processed text content")
     duration: int = Field(..., description="Final video duration in seconds")

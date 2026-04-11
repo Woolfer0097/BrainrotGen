@@ -30,6 +30,7 @@ class Settings(BaseSettings):
         static_example_video_path: Path to static example video file.
         sqlite_db_path: Path to SQLite database file.
     """
+
     app_name: str = "BrainrotGen API"
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
