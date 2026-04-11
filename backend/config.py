@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,6 +15,9 @@ class Settings(BaseSettings):
     model_id: str = "eleven_flash_v2_5"
     output_format: str = "mp3_44100_128"
 
+    use_static_example_video: bool = False
+    static_example_video_path: str = "assets/example.mp4"
+
     sqlite_db_path: str = "./app.db"
 
     model_config = SettingsConfigDict(
@@ -25,6 +29,12 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.sqlite_db_path}"
+
+    @property
+    def static_example_video_file(self) -> Path:
+        root = Path(__file__).resolve().parents[1]
+        path = Path(self.static_example_video_path)
+        return path if path.is_absolute() else root / path
 
 
 @lru_cache
