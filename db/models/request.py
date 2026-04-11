@@ -18,7 +18,8 @@ class Request(Base):
         login: User identifier (indexed for fast quota lookups).
         date: UTC timestamp when the request was created.
         text: The input text to convert to speech (up to 10,000 chars).
-        duration: Video duration in seconds (estimated initially, updated after processing).
+        duration: Video duration in seconds (estimated initially,
+            updated after processing).
     """
 
     __tablename__ = "requests"

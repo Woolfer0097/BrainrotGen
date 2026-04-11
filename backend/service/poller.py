@@ -48,7 +48,8 @@ class RequestPoller:
     """Background poller for video generation requests.
 
     Runs continuously in a background thread, fetching pending requests
-    from the database and processing them through the video generation pipeline.
+    from the database and processing them through the video generation
+    pipeline.
     Tracks progress using a persistent state file.
 
     Attributes:

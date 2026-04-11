@@ -133,7 +133,8 @@ def _wait_for_processed_video(
 
     Args:
         request_id: The database ID of the request being processed.
-        expected_request_date: ISO format date string to verify request freshness.
+        expected_request_date: ISO format date string to verify request
+            freshness.
         timeout_seconds: Maximum time to wait for processing.
         interval_seconds: Sleep interval between status checks.
 

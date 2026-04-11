@@ -19,7 +19,10 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     debug=settings.debug,
-    description="API for generating brainrot videos with TTS, subtitles, and background music.",
+    description=(
+        "API for generating brainrot videos with TTS, subtitles, "
+        "and background music."
+    ),
 )
 
 

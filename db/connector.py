@@ -35,7 +35,8 @@ def get_db() -> Generator[Session, None, None]:
         SQLAlchemy Session instance.
 
     Example:
-        Used with FastAPI Depends: `def endpoint(db: Session = Depends(get_db))`
+        Used with FastAPI Depends:
+        `def endpoint(db: Session = Depends(get_db))`
     """
     db = SessionLocal()
     try:
