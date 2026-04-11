@@ -1,6 +1,7 @@
 from elevenlabs.client import ElevenLabs
-from elevenlabs.types.audio_with_timestamps_response import \
-    AudioWithTimestampsResponse
+from elevenlabs.types.audio_with_timestamps_response import (
+    AudioWithTimestampsResponse,
+)
 
 from backend.config import settings
 
