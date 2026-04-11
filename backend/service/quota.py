@@ -1,3 +1,9 @@
+"""User quota management for video generation.
+
+Tracks daily usage per user and enforces a 5-minute (300 second) quota.
+Quota resets at midnight UTC each day.
+"""
+
 import datetime
 
 from sqlalchemy import func, select
@@ -8,6 +14,7 @@ from db.models.request import Request
 from utils.tts import estimate_duration
 
 DAILY_QUOTA_SECONDS = 300
+"""Daily quota limit in seconds (5 minutes per user)."""
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,6 +24,16 @@ def get_today_duration_sum(
     date: datetime.date,
     session_factory: sessionmaker[Session] = SessionLocal,
 ) -> int:
+    """Calculate total video duration for a user on a specific date.
+
+    Args:
+        login: User identifier to query.
+        date: The date to calculate usage for.
+        session_factory: SQLAlchemy session factory.
+
+    Returns:
+        Total seconds of video generated for the user on that date.
+    """
     with session_factory() as db:
         start = datetime.datetime.combine(date, datetime.time.min)
         end = datetime.datetime.combine(date, datetime.time.max)
@@ -36,6 +53,17 @@ def can_accept_request(
     date: datetime.date | None = None,
     session_factory: sessionmaker[Session] = SessionLocal,
 ) -> bool:
+    """Check if a new request would exceed the user's daily quota.
+
+    Args:
+        login: User identifier to check quota for.
+        text: The text to estimate duration from.
+        date: Date to check (defaults to today).
+        session_factory: SQLAlchemy session factory.
+
+    Returns:
+        True if the request can be accepted without exceeding quota.
+    """
     if date is None:
         date = datetime.datetime.now(datetime.timezone.utc).date()
     estimated = estimate_duration(text)

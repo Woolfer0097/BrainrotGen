@@ -7,6 +7,21 @@ from db.connector import Base
 
 
 class Request(Base):
+    """Database model for video generation requests.
+
+    Tracks user requests for brainrot video generation including
+    the input text, estimated duration, and request timestamp.
+    Used for quota management and request queueing.
+
+    Attributes:
+        id: Auto-incrementing primary key.
+        login: User identifier (indexed for fast quota lookups).
+        date: UTC timestamp when the request was created.
+        text: The input text to convert to speech (up to 10,000 chars).
+        duration: Video duration in seconds (estimated initially,
+            updated after processing).
+    """
+
     __tablename__ = "requests"
     __table_args__ = {"sqlite_autoincrement": True}
 

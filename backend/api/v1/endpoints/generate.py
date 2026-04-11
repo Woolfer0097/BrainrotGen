@@ -21,24 +21,68 @@ PROCESSING_CHECK_INTERVAL_SECONDS = 0.25
 
 
 class GenerateBody(BaseModel):
-    text: str = Field(..., min_length=1, max_length=500)
+    """Request body for video generation endpoint.
 
-    login: str = Field(..., min_length=1, max_length=32)
+    Attributes:
+        text: The text to convert to speech and display as subtitles.
+            Must be between 1 and 500 characters.
+        login: User identifier for quota tracking.
+            Must be between 1 and 32 characters.
+    """
+
+    text: str = Field(
+        ...,
+        min_length=1,
+        max_length=500,
+        description="Text to convert to speech (1-500 characters)",
+    )
+    login: str = Field(
+        ...,
+        min_length=1,
+        max_length=32,
+        description="User login for quota tracking (1-32 characters)",
+    )
 
 
 @router.post(
     "/",
     response_class=Response,
+    summary="Generate brainrot video",
+    description=(
+        "Generates a short-form 'brainrot' video with TTS voiceover, "
+        "subtitles, random background video, and background music. "
+        "Uses ElevenLabs for text-to-speech with word-level timestamps. "
+        "Returns the generated MP4 video directly. "
+        "Each user has a daily quota of 5 minutes of video generation."
+    ),
     responses={
         200: {
-            "description": "Generated video",
+            "description": "Generated MP4 video with subtitles and audio",
             "content": {
                 "video/mp4": {"schema": {"type": "string", "format": "binary"}}
             },
-        }
+        },
+        429: {
+            "description": "Daily quota exceeded (300 seconds limit per user)",
+        },
+        500: {"description": "Video generation failed"},
+        504: {"description": "Request timed out waiting for processing"},
     },
 )
 def generate_video(body: GenerateBody) -> Response:
+    """Generate a brainrot video from text.
+
+    Args:
+        body: The request body containing text and user login.
+
+    Returns:
+        A FastAPI Response containing the generated MP4 video bytes.
+
+    Raises:
+        HTTPException: 429 if daily quota exceeded.
+        HTTPException: 500 if video generation fails.
+        HTTPException: 504 if processing times out.
+    """
     start_request_poller()
 
     login = body.login
@@ -82,6 +126,25 @@ def _wait_for_processed_video(
     timeout_seconds: float,
     interval_seconds: float,
 ) -> bytes:
+    """Poll for video processing completion and return the result.
+
+    Waits for the background poller to finish processing the request,
+    checking periodically for completion or failure.
+
+    Args:
+        request_id: The database ID of the request being processed.
+        expected_request_date: ISO format date string to verify request
+            freshness.
+        timeout_seconds: Maximum time to wait for processing.
+        interval_seconds: Sleep interval between status checks.
+
+    Returns:
+        The generated video file as raw bytes.
+
+    Raises:
+        HTTPException: 500 if video generation failed.
+        HTTPException: 504 if timeout exceeded.
+    """
     request_dir = REQUEST_ARTIFACTS_DIR / str(request_id)
     video_path = request_dir / "video.mp4"
     meta_path = request_dir / "meta.json"
@@ -108,6 +171,14 @@ def _wait_for_processed_video(
 
 
 def _read_meta(path: Path) -> dict[str, object]:
+    """Read and parse a JSON metadata file.
+
+    Args:
+        path: Path to the JSON metadata file.
+
+    Returns:
+        Parsed JSON as a dictionary, or empty dict on error.
+    """
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
