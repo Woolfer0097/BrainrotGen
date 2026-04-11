@@ -8,11 +8,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import requests
-import streamlit as st
+import requests  # noqa: E402
+import streamlit as st  # noqa: E402
 
-from backend.config import settings
-from backend.service.quota import DAILY_QUOTA_SECONDS
+from backend.config import settings  # noqa: E402
+from backend.service.quota import DAILY_QUOTA_SECONDS  # noqa: E402
 
 API_BASE = settings.api_base_url.rstrip("/")
 GENERATE_PATH = f"{settings.api_v1_prefix}/generate"
