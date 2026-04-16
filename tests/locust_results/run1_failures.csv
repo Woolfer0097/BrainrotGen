@@ -1,0 +1,2 @@
+Method,Name,Error,Occurrences
+POST,/api/v1/generate/,CatchResponseError('status 500'),24

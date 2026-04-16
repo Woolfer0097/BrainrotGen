@@ -8,7 +8,7 @@ from fastapi import HTTPException
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from backend.api.v1.endpoints import generate
+from backend.api.v1.endpoints import generate  # noqa: E402
 
 
 def test_wait_for_processed_video_returns_bytes(tmp_path, monkeypatch) -> None:

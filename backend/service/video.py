@@ -1,3 +1,12 @@
+"""Video generation service with TTS, subtitles, and FFmpeg composition.
+
+This module handles the complete video generation pipeline:
+1. Text-to-speech via ElevenLabs with word-level timestamps
+2. Subtitle generation from timestamp alignment
+3. Random background video selection
+4. FFmpeg composition: video + voice + music + subtitles
+"""
+
 import base64
 import random
 import subprocess
@@ -19,6 +28,14 @@ BACKGROUND_MUSIC_VOLUME = 0.12
 
 @dataclass(frozen=True)
 class TimedWord:
+    """A word with its start and end timestamps.
+
+    Attributes:
+        text: The word content.
+        start_seconds: When the word starts in the audio.
+        end_seconds: When the word ends in the audio.
+    """
+
     text: str
     start_seconds: float
     end_seconds: float
@@ -26,15 +43,34 @@ class TimedWord:
 
 @dataclass(frozen=True)
 class AudioInputSpec:
+    """FFmpeg input specification for audio format handling.
+
+    Attributes:
+        extension: File extension for the audio format.
+        ffmpeg_input_args: Additional FFmpeg arguments for this format.
+    """
+
     extension: str
     ffmpeg_input_args: tuple[str, ...]
 
 
 class VideoGenerationError(RuntimeError):
-    pass
+    """Exception raised when video generation fails."""
 
 
 class VideoGenerationService:
+    """Service for generating brainrot videos from text.
+
+    Orchestrates the complete pipeline:
+    - ElevenLabs TTS with word-level timestamps
+    - Subtitle generation with timing cues
+    - Random background video selection
+    - FFmpeg composition with music and subtitles
+
+    Attributes:
+        SUBTITLE_STYLE: FFmpeg subtitle style parameters.
+    """
+
     SUBTITLE_STYLE = (
         "FontName=DejaVu Sans,"
         "FontSize=13,"
@@ -51,13 +87,34 @@ class VideoGenerationService:
     def __init__(
         self, elevenlabs_client: ElevenLabsClient | None = None
     ) -> None:
+        """Initialize the video generation service.
+
+        Args:
+            elevenlabs_client: Optional custom ElevenLabs client.
+        """
         self.elevenlabs_client = elevenlabs_client or ElevenLabsClient()
 
     def generate(self, text: str) -> bytes:
+        """Generate video without returning audio.
+
+        Args:
+            text: The text to convert to speech.
+
+        Returns:
+            Generated MP4 video as bytes.
+        """
         video_bytes, _ = self._generate_with_audio(text)
         return video_bytes
 
     def generate_with_audio(self, text: str) -> tuple[bytes, bytes]:
+        """Generate video and return both video and audio.
+
+        Args:
+            text: The text to convert to speech.
+
+        Returns:
+            Tuple of (video_bytes, audio_bytes).
+        """
         video_bytes, audio_bytes = self._generate_with_audio(text)
         return video_bytes, audio_bytes
 
@@ -422,6 +479,23 @@ class VideoGenerationService:
         subtitles_path: Path,
         output_path: Path,
     ) -> None:
+        """Render the final video using FFmpeg.
+
+        Composes background video, voice audio, background music,
+        and subtitles into a single MP4 output.
+
+        Args:
+            background_video: Path to the background video file.
+            background_start_offset: Random start offset for background video.
+            background_music_path: Path to background music file.
+            audio_path: Path to the TTS voice audio file.
+            audio_input_args: Format-specific FFmpeg input arguments.
+            subtitles_path: Path to the SRT subtitles file.
+            output_path: Path where the final video will be written.
+
+        Raises:
+            VideoGenerationError: If FFmpeg is not found or fails.
+        """
         escaped_subtitles_path = self._escape_subtitles_path(subtitles_path)
         video_filter = (
             "scale=1080:1920:force_original_aspect_ratio=increase,"
